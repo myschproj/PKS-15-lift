@@ -1,0 +1,144 @@
+<Window x:Class="ElevatorSimulator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        mc:Ignorable="d"
+        Title="Elevator Simulator &amp; HTTP Monitor" Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <TabControl>
+            <!-- ===== ВКЛАДКА СЕРВЕР ===== -->
+            <TabItem Header="🌐 Сервер">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Label Content="Порт:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="ServerPortTextBox" Text="8080" Width="60" Margin="5,0"/>
+                        <Button x:Name="StartServerButton" Content="Запустить сервер" Width="120" Click="StartServerButton_Click"/>
+                        <Button x:Name="StopServerButton" Content="Остановить сервер" Width="120" IsEnabled="False" Click="StopServerButton_Click" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    
+                    <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1">
+                        <ScrollViewer>
+                            <TextBox x:Name="ServerLogTextBox" FontFamily="Consolas" IsReadOnly="True" 
+                                     VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" Margin="5"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+            
+            <!-- ===== ВКЛАДКА КЛИЕНТ ===== -->
+            <TabItem Header="📡 Клиент">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Label Content="URL:"/>
+                        <TextBox x:Name="ClientUrlTextBox" Text="http://localhost:8080/status" Width="400" Margin="5,0"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Label Content="Метод:"/>
+                        <ComboBox x:Name="MethodComboBox" Width="100" SelectedIndex="0">
+                            <ComboBoxItem Content="GET"/>
+                            <ComboBoxItem Content="POST"/>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,0,0,10">
+                        <Label Content="Тело запроса (JSON):"/>
+                        <TextBox x:Name="RequestBodyTextBox" Height="60" TextWrapping="Wrap" 
+                                 Text='{ "message": "тест" }'/>
+                    </StackPanel>
+                    
+                    <Button Grid.Row="3" x:Name="SendRequestButton" Content="Отправить запрос" Width="150" 
+                            HorizontalAlignment="Left" Click="SendRequestButton_Click" Margin="0,0,0,10"/>
+                    
+                    <Label Grid.Row="4" Content="Ответ:"/>
+                    <Border Grid.Row="5" BorderBrush="Gray" BorderThickness="1">
+                        <ScrollViewer>
+                            <TextBox x:Name="ResponseTextBox" FontFamily="Consolas" IsReadOnly="True" 
+                                     TextWrapping="Wrap" Margin="5"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+            
+            <!-- ===== ВКЛАДКА МОНИТОРИНГ ===== -->
+            <TabItem Header="📊 Мониторинг">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+                    
+                    <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                        <Label Content="Фильтр по методу:"/>
+                        <ComboBox x:Name="FilterMethodComboBox" Width="100" SelectedIndex="2"
+                                  SelectionChanged="FilterMethodComboBox_SelectionChanged">
+                            <ComboBoxItem Content="GET"/>
+                            <ComboBoxItem Content="POST"/>
+                            <ComboBoxItem Content="Все"/>
+                        </ComboBox>
+                        <Label Content="Фильтр по статусу:" Margin="10,0,0,0"/>
+                        <ComboBox x:Name="FilterStatusComboBox" Width="100" SelectedIndex="0"
+                                  SelectionChanged="FilterStatusComboBox_SelectionChanged">
+                            <ComboBoxItem Content="200 OK"/>
+                            <ComboBoxItem Content="400+"/>
+                            <ComboBoxItem Content="Все"/>
+                        </ComboBox>
+                    </WrapPanel>
+                    
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock x:Name="StatsTextBlock" FontWeight="Bold"/>
+                    </StackPanel>
+                    
+                    <DataGrid Grid.Row="2" x:Name="LogsDataGrid" AutoGenerateColumns="True" IsReadOnly="True"/>
+                    
+                    <oxy:PlotView Grid.Row="3" x:Name="LoadPlotView" Margin="0,10,0,0"/>
+                </Grid>
+            </TabItem>
+            
+            <!-- ===== ВКЛАДКА СИМУЛЯТОР ЛИФТОВ ===== -->
+            <TabItem Header="🏢 Лифты">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Управление этажами" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <ItemsControl x:Name="FloorButtonsItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding FloorNumber}" Margin="2" 
+                                            Command="{Binding CallElevatorCommand}" 
+                                            CommandParameter="{Binding FloorNumber}"
+                                            Background="LightGray"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    
+                    <Canvas Grid.Column="1" x:Name="BuildingCanvas" Width="600" Height="600" Background="White"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
